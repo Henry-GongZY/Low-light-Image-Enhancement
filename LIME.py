@@ -3,11 +3,10 @@ from scipy.fft import *
 from skimage import exposure
 import os
 import cv2
-
+from tqdm import trange
 
 def firstOrderDerivative(n, k=1):
     return np.eye(n) * (-1) + np.eye(n, k=k)
-
 
 class LIME:
     def __init__(self, iterations, alpha, rho, gamma, strategy, *args, **kwargs):
@@ -25,7 +24,6 @@ class LIME:
         self.T_hat = np.max(self.L, axis=2)
         self.dv = firstOrderDerivative(self.row)
         self.dh = firstOrderDerivative(self.col, -1)
-        #self.vecDD = toeplitizMatrix(self.row * self.col, self.row)
 
         dxe = np.zeros((self.row, self.col))
         dye = np.zeros((self.row, self.col))
@@ -43,7 +41,7 @@ class LIME:
         dyc = np.conj(dyf)
         dy_mod = dyc * dyf
 
-        self.vecDD = dx_mod + dy_mod
+        self.DD = dx_mod + dy_mod
 
         self.W = self.weightingStrategy()
 
@@ -63,8 +61,7 @@ class LIME:
         Xh = X[self.row:, :]
 
         numerator = fft2(2 * self.T_hat + miu * (self.dv @ Xv + Xh @ self.dh))
-        #denominator = fft2(self.vecDD.reshape((self.row, self.col),order = 'F') * miu) + 2
-        denominator = self.vecDD * miu + 2
+        denominator = self.DD * miu + 2
         T = ifft2(numerator / denominator)
         T = np.real(T)
 
@@ -89,12 +86,11 @@ class LIME:
         Z = np.zeros((self.row * 2, self.col))
         miu = 1
 
-        for i in range(self.iterations):
+        for i in trange((0,self.iterations)):
             T = self.T_sub(G, Z, miu)
             G = self.G_sub(T, Z, miu, self.W)
             Z = self.Z_sub(T, G, Z, miu)
             miu = self.miu_sub(miu)
-            print('iterated for {} times!'.format(i+1))
 
         self.T = T ** self.gamma
         self.R = self.L / np.repeat(self.T[..., None], 3, axis = -1)
@@ -103,7 +99,7 @@ class LIME:
 
 
 def main():
-    filePath = "./demo/wx.jpg"
+    filePath = "./demo/2.jpg"
     lime = LIME(iterations=30,alpha=0.15,rho=1.1,gamma=0.6,strategy=2)
     lime.load(filePath)
     lime.run()
