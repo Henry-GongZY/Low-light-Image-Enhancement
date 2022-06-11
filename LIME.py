@@ -1,15 +1,11 @@
 import numpy as np
 from scipy.fft import *
 from skimage import exposure
-import os
 import cv2
 from tqdm import trange
 
-def firstOrderDerivative(n, k=1):
-    return np.eye(n) * (-1) + np.eye(n, k=k)
-
 class LIME:
-    def __init__(self, iterations, alpha, rho, gamma, strategy, *args, **kwargs):
+    def __init__(self, iterations, alpha, rho, gamma, strategy):
         self.iterations = iterations
         self.alpha = alpha
         self.rho = rho
@@ -17,35 +13,31 @@ class LIME:
         self.strategy = strategy
 
     def load(self, imgPath):
-        self.L = cv2.imread(imgPath) / 255
+        self.loadindual(cv2.imread(imgPath) / 255)
+
+    def loadindual(self,L):
+        self.L = L
         self.row = self.L.shape[0]
         self.col = self.L.shape[1]
 
         self.T_hat = np.max(self.L, axis=2)
-        self.dv = firstOrderDerivative(self.row)
-        self.dh = firstOrderDerivative(self.col, -1)
+        self.dv = -np.eye(self.row) + np.eye(self.row, k=1)
+        self.dh = -np.eye(self.col) + np.eye(self.col, k=-1)
 
-        dxe = np.zeros((self.row, self.col))
-        dye = np.zeros((self.row, self.col))
+        dx = np.zeros((self.row, self.col))
+        dy = np.zeros((self.row, self.col))
+        dx[1, 0] = 1
+        dx[1, 1] = -1
+        dy[0, 1] = 1
+        dy[1, 1] = -1
 
-        dxe[1, 0] = 1
-        dxe[1, 1] = -1
-        dye[0, 1] = 1
-        dye[1, 1] = -1
+        dxf = fft2(dx)
+        dyf = fft2(dy)
 
-        dxf = fft2(dxe)
-        dxc = np.conj(dxf)
-        dx_mod = dxc * dxf
+        self.DD = np.conj(dxf) * dxf + np.conj(dyf) * dyf
+        self.W = self.Strategy()
 
-        dyf = fft2(dye)
-        dyc = np.conj(dyf)
-        dy_mod = dyc * dyf
-
-        self.DD = dx_mod + dy_mod
-
-        self.W = self.weightingStrategy()
-
-    def weightingStrategy(self):
+    def Strategy(self):
         if self.strategy == 2:
             dTv = self.dv @ self.T_hat
             dTh = self.T_hat @ self.dh
@@ -86,7 +78,7 @@ class LIME:
         Z = np.zeros((self.row * 2, self.col))
         miu = 1
 
-        for i in trange((0,self.iterations)):
+        for i in trange(0,self.iterations):
             T = self.T_sub(G, Z, miu)
             G = self.G_sub(T, Z, miu, self.W)
             Z = self.Z_sub(T, G, Z, miu)
@@ -96,17 +88,3 @@ class LIME:
         self.R = self.L / np.repeat(self.T[..., None], 3, axis = -1)
         self.R = exposure.rescale_intensity(self.R, (0, 1)) * 255
         return self.R
-
-
-def main():
-    filePath = "./demo/2.jpg"
-    lime = LIME(iterations=30,alpha=0.15,rho=1.1,gamma=0.6,strategy=2)
-    lime.load(filePath)
-    lime.run()
-    filename = os.path.split(filePath)[-1]
-    savePath = f"./demo/enhanced_{filename}"
-    cv2.imwrite(savePath, lime.R)
-
-
-if __name__ == "__main__":
-    main()
