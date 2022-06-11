@@ -20,7 +20,7 @@ class LIME:
         self.row = self.L.shape[0]
         self.col = self.L.shape[1]
 
-        self.T_hat = np.max(self.L, axis=2)
+        self.T_esti = np.max(self.L, axis=2)
         self.dv = -np.eye(self.row) + np.eye(self.row, k=1)
         self.dh = -np.eye(self.col) + np.eye(self.col, k=-1)
 
@@ -34,15 +34,13 @@ class LIME:
         dxf = fft2(dx)
         dyf = fft2(dy)
 
-        self.DD = np.conj(dxf) * dxf + np.conj(dyf) * dyf
+        self.DTD = np.conj(dxf) * dxf + np.conj(dyf) * dyf
         self.W = self.Strategy()
 
     def Strategy(self):
         if self.strategy == 2:
-            dTv = self.dv @ self.T_hat
-            dTh = self.T_hat @ self.dh
-            Wv = 1 / (np.abs(dTv) + 1)
-            Wh = 1 / (np.abs(dTh) + 1)
+            Wv = 1 / (np.abs(self.dv @ self.T_esti) + 1)
+            Wh = 1 / (np.abs(self.T_esti @ self.dh) + 1)
             return np.vstack((Wv, Wh))
         else:
             return np.ones((self.row * 2, self.col))
@@ -52,8 +50,8 @@ class LIME:
         Xv = X[:self.row, :]
         Xh = X[self.row:, :]
 
-        numerator = fft2(2 * self.T_hat + miu * (self.dv @ Xv + Xh @ self.dh))
-        denominator = self.DD * miu + 2
+        numerator = fft2(2 * self.T_esti + miu * (self.dv @ Xv + Xh @ self.dh))
+        denominator = self.DTD * miu + 2
         T = ifft2(numerator / denominator)
         T = np.real(T)
 
@@ -86,5 +84,4 @@ class LIME:
 
         self.T = T ** self.gamma
         self.R = self.L / np.repeat(self.T[..., None], 3, axis = -1)
-        self.R = exposure.rescale_intensity(self.R, (0, 1)) * 255
-        return self.R
+        return exposure.rescale_intensity(self.R, (0, 1)) * 255

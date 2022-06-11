@@ -1,15 +1,22 @@
 import os
 import cv2
 from LIME import LIME
+from DUAL import DUAL
+
+# def main():
+#     filePath = "./pics/2.jpg"
+#     lime = LIME(iterations=30,alpha=0.15,rho=1.1,gamma=0.6,strategy=2)
+#     lime.load(filePath)
+#     R = lime.run()
+#     filename = os.path.split(filePath)[-1]
+#     savePath = f"./pics/enhanced_{filename}"
+#     cv2.imwrite(savePath, R)
 
 def main():
     filePath = "./pics/2.jpg"
-    lime = LIME(iterations=30,alpha=0.15,rho=1.1,gamma=0.6,strategy=2)
-    lime.load(filePath)
-    lime.run()
-    filename = os.path.split(filePath)[-1]
-    savePath = f"./pics/enhanced_{filename}"
-    cv2.imwrite(savePath, lime.R)
+    dual = DUAL(iterations=30, alpha=0.15, rho=1.1, gamma=0.6, limestrategy=2)
+    dual.load(filePath)
+    dual.run()
 
 if __name__ == "__main__":
     main()
