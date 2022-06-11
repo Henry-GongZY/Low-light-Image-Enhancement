@@ -13,9 +13,9 @@ class LIME:
         self.strategy = strategy
 
     def load(self, imgPath):
-        self.loadindual(cv2.imread(imgPath) / 255)
+        self.loadimage(cv2.imread(imgPath) / 255)
 
-    def loadindual(self,L):
+    def loadimage(self,L):
         self.L = L
         self.row = self.L.shape[0]
         self.col = self.L.shape[1]
