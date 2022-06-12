@@ -84,4 +84,4 @@ class LIME:
 
         self.T = T ** self.gamma
         self.R = self.L / np.repeat(self.T[..., None], 3, axis = -1)
-        return exposure.rescale_intensity(self.R, (0, 1)) * 255
+        return self.R * 255

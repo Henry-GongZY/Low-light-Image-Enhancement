@@ -31,8 +31,8 @@ Here are two examples for LIME:
 
 | Low light image  | Enhanced image with LIME  |
 |:----------------:|:-------------------------:|
-| ![](pics/2.jpg)  | ![](pics/enhanced_2.jpg)  |
-| ![](pics/wx.jpg) | ![](pics/enhanced_wx.jpg) |
+| ![](pics/2.jpg)  | ![](pics/LIME_2.jpg)  |
+| ![](pics/wx.jpg) | ![](pics/LIME_wx.jpg) |
 
 **DUAL implementation remains to be solved!**
 

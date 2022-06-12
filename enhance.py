@@ -9,7 +9,7 @@ from DUAL import DUAL
 #     lime.load(filePath)
 #     R = lime.run()
 #     filename = os.path.split(filePath)[-1]
-#     savePath = f"./pics/enhanced_{filename}"
+#     savePath = f"./pics/LIME_{filename}"
 #     cv2.imwrite(savePath, R)
 
 def main():
