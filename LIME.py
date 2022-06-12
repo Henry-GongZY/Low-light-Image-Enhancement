@@ -30,11 +30,10 @@ class LIME:
         dx[1, 1] = -1
         dy[0, 1] = 1
         dy[1, 1] = -1
-
         dxf = fft2(dx)
         dyf = fft2(dy)
-
         self.DTD = np.conj(dxf) * dxf + np.conj(dyf) * dyf
+
         self.W = self.Strategy()
 
     def Strategy(self):
@@ -52,20 +51,17 @@ class LIME:
 
         numerator = fft2(2 * self.T_esti + miu * (self.dv @ Xv + Xh @ self.dh))
         denominator = self.DTD * miu + 2
-        T = ifft2(numerator / denominator)
-        T = np.real(T)
+        T = np.real(ifft2(numerator / denominator))
 
         return exposure.rescale_intensity(T, (0, 1), (0.001, 1))
 
     def G_sub(self, T, Z, miu, W):
-        dT = np.vstack([self.dv @ T,T @ self.dh])
         epsilon = self.alpha * W / miu
-        X = dT + Z / miu
+        X = np.vstack((self.dv @ T,T @ self.dh)) + Z / miu
         return np.sign(X) * np.maximum(np.abs(X) - epsilon, 0)
 
     def Z_sub(self, T, G, Z, miu):
-        dT = np.vstack([self.dv @ T,T @ self.dh])
-        return Z + miu * (dT - G)
+        return Z + miu * (np.vstack((self.dv @ T,T @ self.dh)) - G)
 
     def miu_sub(self, miu):
         return miu * self.rho
@@ -84,4 +80,4 @@ class LIME:
 
         self.T = T ** self.gamma
         self.R = self.L / np.repeat(self.T[..., None], 3, axis = -1)
-        return self.R * 255
+        return exposure.rescale_intensity(self.R,(0,1)) * 255
