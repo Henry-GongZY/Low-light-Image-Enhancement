@@ -21,8 +21,8 @@ class LIME:
         self.col = self.L.shape[1]
 
         self.T_esti = np.max(self.L, axis=2)
-        self.dv = -np.eye(self.row) + np.eye(self.row, k=1)
-        self.dh = -np.eye(self.col) + np.eye(self.col, k=-1)
+        self.Dv = -np.eye(self.row) + np.eye(self.row, k=1)
+        self.Dh = -np.eye(self.col) + np.eye(self.col, k=-1)
 
         dx = np.zeros((self.row, self.col))
         dy = np.zeros((self.row, self.col))
@@ -38,8 +38,8 @@ class LIME:
 
     def Strategy(self):
         if self.strategy == 2:
-            Wv = 1 / (np.abs(self.dv @ self.T_esti) + 1)
-            Wh = 1 / (np.abs(self.T_esti @ self.dh) + 1)
+            Wv = 1 / (np.abs(self.Dv @ self.T_esti) + 1)
+            Wh = 1 / (np.abs(self.T_esti @ self.Dh) + 1)
             return np.vstack((Wv, Wh))
         else:
             return np.ones((self.row * 2, self.col))
@@ -49,7 +49,7 @@ class LIME:
         Xv = X[:self.row, :]
         Xh = X[self.row:, :]
 
-        numerator = fft2(2 * self.T_esti + miu * (self.dv @ Xv + Xh @ self.dh))
+        numerator = fft2(2 * self.T_esti + miu * (self.Dv @ Xv + Xh @ self.Dh))
         denominator = self.DTD * miu + 2
         T = np.real(ifft2(numerator / denominator))
 
@@ -57,11 +57,11 @@ class LIME:
 
     def G_sub(self, T, Z, miu, W):
         epsilon = self.alpha * W / miu
-        X = np.vstack((self.dv @ T,T @ self.dh)) + Z / miu
-        return np.sign(X) * np.maximum(np.abs(X) - epsilon, 0)
+        temp = np.vstack((self.Dv @ T, T @ self.Dh)) + Z / miu
+        return np.sign(temp) * np.maximum(np.abs(temp) - epsilon, 0)
 
     def Z_sub(self, T, G, Z, miu):
-        return Z + miu * (np.vstack((self.dv @ T,T @ self.dh)) - G)
+        return Z + miu * (np.vstack((self.Dv @ T, T @ self.Dh)) - G)
 
     def miu_sub(self, miu):
         return miu * self.rho
