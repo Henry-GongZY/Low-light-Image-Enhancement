@@ -4,7 +4,7 @@ import cv2
 
 class DUAL:
     def __init__(self, iterations, alpha, rho, gamma, limestrategy):
-        self.limecore = LIME(iterations,alpha,rho,gamma,limestrategy)
+        self.limecore = LIME(iterations,alpha,rho,gamma,limestrategy,exact=True)
 
     def load(self, imgPath):
         self.img = cv2.imread(imgPath) / 255

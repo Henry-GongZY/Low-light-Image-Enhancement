@@ -5,13 +5,15 @@ import cv2
 from tqdm import trange
 
 class LIME:
-    def __init__(self, iterations, alpha, rho, gamma, strategy):
+    # 初始化参数
+    def __init__(self, iterations, alpha, rho, gamma, strategy, exact):
         self.iterations = iterations
         self.alpha = alpha
         self.rho = rho
         self.gamma = gamma
         self.strategy = strategy
-
+        self.exact = exact
+    # 加载
     def load(self, imgPath):
         self.loadimage(cv2.imread(imgPath) / 255)
 
@@ -38,9 +40,11 @@ class LIME:
 
     def Strategy(self):
         if self.strategy == 2:
-            Wv = 1 / (np.abs(self.Dv @ self.T_esti) + 1)
-            Wh = 1 / (np.abs(self.T_esti @ self.Dh) + 1)
-            return np.vstack((Wv, Wh))
+            self.Wv = 1 / (np.abs(self.Dv @ self.T_esti) + 1)
+            self.Wh = 1 / (np.abs(self.T_esti @ self.Dh) + 1)
+            print(self.Wv.shape,self.Wh.shape)
+            exit()
+            return np.vstack((self.Wv, self.Wh))
         else:
             return np.ones((self.row * 2, self.col))
 
@@ -67,17 +71,23 @@ class LIME:
         return miu * self.rho
 
     def run(self):
-        T = np.zeros((self.row, self.col))
-        G = np.zeros((self.row * 2, self.col))
-        Z = np.zeros((self.row * 2, self.col))
-        miu = 1
+        if self.exact:
+            # exact algorithm
+            T = np.zeros((self.row, self.col))
+            G = np.zeros((self.row * 2, self.col))
+            Z = np.zeros((self.row * 2, self.col))
+            miu = 1
 
-        for i in trange(0,self.iterations):
-            T = self.T_sub(G, Z, miu)
-            G = self.G_sub(T, Z, miu, self.W)
-            Z = self.Z_sub(T, G, Z, miu)
-            miu = self.miu_sub(miu)
+            for i in trange(0,self.iterations):
+                T = self.T_sub(G, Z, miu)
+                G = self.G_sub(T, Z, miu, self.W)
+                Z = self.Z_sub(T, G, Z, miu)
+                miu = self.miu_sub(miu)
 
-        self.T = T ** self.gamma
-        self.R = self.L / np.repeat(self.T[..., None], 3, axis = -1)
-        return exposure.rescale_intensity(self.R,(0,1)) * 255
+            self.T = T ** self.gamma
+            self.R = self.L / np.repeat(self.T[..., None], 3, axis = -1)
+            return exposure.rescale_intensity(self.R,(0,1)) * 255
+        else:
+            # fast algorithm
+
+            pass
