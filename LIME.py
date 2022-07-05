@@ -13,10 +13,12 @@ class LIME:
         self.gamma = gamma
         self.strategy = strategy
         self.exact = exact
-    # 加载
+
+    # 加载图片，并归一化到 0~1 内
     def load(self, imgPath):
         self.loadimage(cv2.imread(imgPath) / 255)
 
+    # 初始化Dx,Dy,DTD
     def loadimage(self,L):
         self.L = L
         self.row = self.L.shape[0]
@@ -38,6 +40,7 @@ class LIME:
 
         self.W = self.Strategy()
 
+    # 这里使用策略2
     def Strategy(self):
         if self.strategy == 2:
             self.Wv = 1 / (np.abs(self.Dv @ self.T_esti) + 1)
@@ -48,6 +51,7 @@ class LIME:
         else:
             return np.ones((self.row * 2, self.col))
 
+    # T子问题
     def T_sub(self, G, Z, miu):
         X = G - Z / miu
         Xv = X[:self.row, :]
@@ -59,18 +63,22 @@ class LIME:
 
         return exposure.rescale_intensity(T, (0, 1), (0.001, 1))
 
+    # G子问题
     def G_sub(self, T, Z, miu, W):
         epsilon = self.alpha * W / miu
         temp = np.vstack((self.Dv @ T, T @ self.Dh)) + Z / miu
         return np.sign(temp) * np.maximum(np.abs(temp) - epsilon, 0)
 
+    # Z子问题
     def Z_sub(self, T, G, Z, miu):
         return Z + miu * (np.vstack((self.Dv @ T, T @ self.Dh)) - G)
 
+    # miu子问题
     def miu_sub(self, miu):
         return miu * self.rho
 
     def run(self):
+        # 精确算法
         if self.exact:
             # exact algorithm
             T = np.zeros((self.row, self.col))
@@ -87,7 +95,6 @@ class LIME:
             self.T = T ** self.gamma
             self.R = self.L / np.repeat(self.T[..., None], 3, axis = -1)
             return exposure.rescale_intensity(self.R,(0,1)) * 255
+        # 快速算法
         else:
-            # fast algorithm
-
             pass
