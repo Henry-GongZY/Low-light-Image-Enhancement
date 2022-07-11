@@ -45,8 +45,6 @@ class LIME:
         if self.strategy == 2:
             self.Wv = 1 / (np.abs(self.Dv @ self.T_esti) + 1)
             self.Wh = 1 / (np.abs(self.T_esti @ self.Dh) + 1)
-            print(self.Wv.shape,self.Wh.shape)
-            exit()
             return np.vstack((self.Wv, self.Wh))
         else:
             return np.ones((self.row * 2, self.col))
@@ -80,7 +78,6 @@ class LIME:
     def run(self):
         # 精确算法
         if self.exact:
-            # exact algorithm
             T = np.zeros((self.row, self.col))
             G = np.zeros((self.row * 2, self.col))
             Z = np.zeros((self.row * 2, self.col))
@@ -95,6 +92,6 @@ class LIME:
             self.T = T ** self.gamma
             self.R = self.L / np.repeat(self.T[..., None], 3, axis = -1)
             return exposure.rescale_intensity(self.R,(0,1)) * 255
-        # 快速算法
+        # TODO:快速算法
         else:
             pass
