@@ -14,7 +14,7 @@ pip install -r requirements.txt
 You can also use conda to install dependencies:
 
 ```shell
-conda install -r requirements.txt
+conda install --file requirements.txt
 ```
 
 ## Usage
