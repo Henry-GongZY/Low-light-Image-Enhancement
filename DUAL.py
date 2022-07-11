@@ -13,7 +13,7 @@ class DUAL:
         self.imgrev = 1 - self.img
         self.imgname = os.path.split(imgPath)[-1]
 
-    # 多曝光图像融合
+    # 多曝光图像融合 (论文中提到的融合算法已被OpenCV收录)
     def multi_exposureimageFushion(self):
         mergecore = cv2.createMergeMertens(1,1,1)
         img = mergecore.process([self.img,self.forwardimg,self.reverseimg])
