@@ -19,7 +19,7 @@ conda install --file requirements.txt
 
 ## Usage
 
-Go to ```enhance.py```,adjust your filepath and type the following command in your shell:
+Go to ```enhance.py```, adjust your filepath and type the following command to run the operator:
 
 ```shell
 python enhance.py
@@ -27,18 +27,27 @@ python enhance.py
 
 ## Result
 
-Here are two examples for LIME:
+**Here are two examples for LIME:**
 
 | Low light image  | Enhanced image with LIME  |
 |:----------------:|:-------------------------:|
 | ![](pics/2.jpg)  | ![](pics/LIME_2.jpg)  |
 | ![](pics/wx.jpg) | ![](pics/LIME_wx.jpg) |
 
-**DUAL implementation remains to be solved!**
+**Here are few examples for DUAL:**
+
+| Low light image  | Adjusted image with DUAL  |
+|:----------------:|:-------------------------:|
+| ![](pics/2.jpg)  | ![](pics/DUAL_result_2.jpg)  |
+| ![](pics/wx.jpg) | ![](pics/DUAL_result_wx.jpg) |
+
+| Over-exposed image  | Adjusted image with DUAL  |
+|:----------------:|:-------------------------:|
+| ![](pics/over_exposed_1.png)  | ![](pics/DUAL_result_over_exposed_1.png)  |
 
 ## Thanks
 
-Special thanks for the writers of the papers.
+Thanks to the writers of the papers.
 
 Also thanks for the explanations given here:
 
